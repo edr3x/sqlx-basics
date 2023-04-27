@@ -98,6 +98,14 @@ async fn read(conn: &sqlx::PgPool) -> Result<Vec<Book>, Box<dyn Error>> {
     Ok(books)
 }
 
+async fn delete(isbn: &str, pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    let query = "DELETE FROM book WHERE isbn = $1";
+
+    sqlx::query(query).bind(isbn).execute(pool).await?;
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // 1) Create a connection pool
