@@ -106,6 +106,44 @@ async fn delete(isbn: &str, pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+async fn transaction(pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    let mut txn = pool.begin().await?;
+
+    let result = sqlx::query("").execute(&mut txn).await?;
+
+    // NOTE: if the query did not affect any rows then rollback the transaction
+    if result.rows_affected() != 1 {
+        txn.rollback().await?; // rollback the transaction if the query is not successful
+        return Err("failed to insert row".into());
+    }
+
+    let result = sqlx::query("").execute(&mut txn).await?;
+
+    // NOTE: if the query did not affect any rows then rollback the transaction
+    if result.rows_affected() != 1 {
+        txn.rollback().await?; // rollback whole transaction if this fails i.e. even if the first
+                               // one was success
+        return Err("failed to insert row".into());
+    }
+
+    // NOTE: if performaing a query that effects multiple rows we can do this
+    let name = "John";
+    let query = "DELETE FROM book WHERE author_name = $1";
+
+    let result = sqlx::query(query).bind(name).execute(&mut txn).await?;
+
+    if result.rows_affected() == 0 {
+        // if no rows were affected then rollback the transaction
+        txn.rollback().await?;
+        return Err("failed to delete row".into());
+    }
+
+    // NOTE: if everything is successful then commit the transaction
+    txn.commit().await?;
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // 1) Create a connection pool
