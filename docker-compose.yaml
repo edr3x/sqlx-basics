@@ -1,0 +1,18 @@
+version: '3.9'
+  
+services:
+  postgres:
+    image: postgres
+    container_name: "sqlxlrn"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=sqlxlearn
+
+volumes:
+  postgres:
+    name: "sqlx-lrn-volume"
