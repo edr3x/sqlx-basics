@@ -688,6 +688,7 @@ dependencies = [
 name = "rust-sqlx"
 version = "0.1.0"
 dependencies = [
+ "dotenvy",
  "futures",
  "sqlx",
  "tokio",
